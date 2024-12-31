@@ -67,6 +67,28 @@ app.get('/users/:id', async ( req, res ) => {
     }
 });
 
+app.put( '/users/:id', async ( req, res ) => {
+    const { id } = req.params;
+    const { name, email, address } = req.body;
+    if (!name || !email) {
+        return res.status(400).send('Name and email are required');
+    }
+    try{
+        const query = 'UPDATE users SET name = $1, email = $2, address = $3 WHERE id = $4 RETURNING *';
+        const values = [name, email, address || null, id];
+        const { rows } = await pool.query(query, values);
+        
+        if (rows.length === 0) {
+            return res.status(404).send('User not found');
+        }
+        res.json(rows[0]);
+    } catch (err) {
+        console.error('Query error:', err);
+        res.status(500).send('Server error');
+    }
+    
+})
+
 app.get('/', (req, res) => {
     res.send('Hello World!!!!!');
 });
