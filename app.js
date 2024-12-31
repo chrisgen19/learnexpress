@@ -14,15 +14,7 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-app.get('/users', async (req, res) => {
-    try {
-        const { rows } = await pool.query('SELECT * FROM users');
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
-});
+
 
 app.use(express.json()); // Middleware to parse JSON
 
@@ -47,6 +39,32 @@ app.post('/users', async (req, res) => {
         console.error(err);
         res.status(500).send('Server error');
   }
+});
+
+app.get('/users', async (req, res) => {
+    try {
+      const { rows } = await pool.query('SELECT * FROM users');
+      res.json(rows);
+    } catch (err) {
+      console.error('Query error:', err);
+      res.status(500).send('Server error');
+    }
+});
+
+app.get('/users/:id', async ( req, res ) => {
+    const { id } = req.params;
+   
+    try{
+        const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (rows.length === 0) {
+            return res.status(404).send('User not found');
+        }
+        res.json(rows[0]);
+
+    } catch (err) {
+        console.error('Query error:', err);
+        res.status(500).send('Server error');
+    }
 });
 
 app.get('/', (req, res) => {
