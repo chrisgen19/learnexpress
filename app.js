@@ -89,6 +89,21 @@ app.put( '/users/:id', async ( req, res ) => {
     
 })
 
+app.delete('/users/:id', async (req, res) =>{
+    const { id } = req.params;
+
+    try{
+        const { rows } = await pool.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
+        if (rows.length === 0) {
+            return res.status(404).send('User not found');
+        }
+        res.json({ message: 'User deleted', user: rows[0] });
+    } catch (err) {
+        console.error('Query error:', err);
+        res.status(500).send('Server error');
+    }
+});
+
 app.get('/', (req, res) => {
     res.send('Hello World!!!!!');
 });
